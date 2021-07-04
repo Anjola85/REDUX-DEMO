@@ -1,30 +1,40 @@
 const redux = require("redux");
 const createStore = redux.createStore;
-// CODE FORMAT:  JS APP -> ACTION -> REDUCER -> REDUX STORE -> JS APP
-// this happens in a matter of milli-seconds
+const combineReducers = redux.combineReducers;
 
 // FIRST STEP -> ACTION
 const BUY_CAKE = "BUY_CAKE";
-// this function returns an action(which is an object with the TYPE property)
+const BUY_ICECREAM = "BUY_ICECREAM";
+
 function buyCake() {
   return {
-    type: BUY_CAKE, // this indicates the type of action to perform
+    type: BUY_CAKE,
     info: "First redux action",
+  };
+}
+
+function buyIceCream() {
+  return {
+    type: BUY_ICECREAM,
   };
 }
 
 // SECOND STEP -> REDUCERS: (updates the state): i.e controles how the state transition happen
 // (previousState, action) => newState
 
-const initialState = {
+const initialCakeState = {
   numOfCakes: 10,
 };
 
-const reducer = (state = initialState, action) => {
+const initialIceCreamState = {
+  numOfIceCreams: 20,
+};
+
+const cakeReducer = (state = initialCakeState, action) => {
   switch (action.type) {
     case BUY_CAKE:
       return {
-        ...state, //using spread operator to create copy of the state object and only update the property that needs changing
+        ...state,
         numOfCakes: state.numOfCakes - 1,
       };
 
@@ -33,22 +43,41 @@ const reducer = (state = initialState, action) => {
   }
 };
 
+const iceCreamReducer = (state = initialIceCreamState, action) => {
+  switch (action.type) {
+    case BUY_ICECREAM:
+      return {
+        ...state,
+        numOfIceCreams: state.numOfIceCreams - 1,
+      };
+
+    default:
+      return state;
+  }
+};
+
+const rootReducer = combineReducers({
+  cake: cakeReducer,
+  iceCream: iceCreamReducer,
+});
+
 // THIRD STEP -> REDUX STORE
-// remeber to timport redux and redux.createStore
 
-const store = createStore(reducer); //this creates the redux store. (1)holding application state
-console.log("Initial state: ", store.getState()); //getState() returns initial state of the application
-
+const store = createStore(rootReducer);
+console.log("Initial state: ", store.getState());
 const unsubscribe = store.subscribe(
   //this is a listener: it logs to the console anytime the store updates.
-  () => console.log("Updated state: ", store.getState()) //allows app to subscribe to changes in the store
+  () => console.log("Updated state: ", store.getState())
 );
 
 store.dispatch(buyCake()); //dispatch(action): allows state to be updated
 store.dispatch(buyCake());
 store.dispatch(buyCake());
+store.dispatch(buyIceCream());
+store.dispatch(buyIceCream());
 unsubscribe();
 
-// EXPLANATION;
-// when dispatch("action") is called, the reducer sees the action type which is "buyCake()". Next the store state is updated
-// the listener is then called which logs to the console THE UPDATED STATE.
+// explanation
+// how to compile multiple reducers and states
+// combining all reducers by using the built in redux method
+// combineReducers accepts an object that has a key value pair which corresponds to the reducer
